@@ -126,6 +126,8 @@ def product_table_processing(conn_z, conn_i):
     product['product_id'] = product['product_id'].astype('int')
     product['pricing_line_id'] = product['pricing_line_id'].astype('int')
     product['brand_id'] = product['brand_id'].astype('int')
+    record_errors(product[pd.to_numeric(product['name_short'], errors='coerce') >= 0].astype(str), 'product', 'неверный формат name_short', conn_i)
+    product = product[~(pd.to_numeric(product['name_short'], errors='coerce') >= 0)]
     product['name_short'] = product['name_short'].replace(['', 'NULL'], ["Не определено", "Не определено"])
     product.to_csv('product.csv', index=False)
     csv_to_db('product', ','.join(list(product)), conn_i)
