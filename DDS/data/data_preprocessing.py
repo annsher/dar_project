@@ -22,8 +22,10 @@ def create_table_intern(conn_i):
     create = ''.join(f.readlines())
     cursor.execute(create)
     truncate_table_intern('pos', conn_i.raw_connection())
+    truncate_table_intern('transaction_pos', conn_i.raw_connection())
     #загрузка таблицы магазинов, которую предоставил заказчик
     csv_to_db('pos', 'pos, pos_name', conn_i.raw_connection())
+    csv_to_db('transaction_pos', 'transaction_id, pos_name', conn_i.raw_connection())
     conn_i.raw_connection().commit()
     cursor.close()
     print('Таблицы загружены')
@@ -210,6 +212,20 @@ def transaction_table_processing(conn_z, conn_i):
     print('links in transaction checked')
     print('transaction table uploaded')
 
+def transaction_pos_table_processing(conn_i):
+    transaction_pos = pd.read_sql_table('transaction_pos', conn_i.connect(), 'DDS', coerce_float=False)
+    transaction_pos.drop_duplicates()
+    transaction_pos['pos_name'] = transaction_pos['pos_name'].astype(str)
+    transaction_pos = transaction_pos[transaction_pos['pos_name'] != 'None']
+    pos = pd.read_sql_table('pos', conn_i.connect(), 'DDS', coerce_float=False)
+    transaction = pd.read_sql_table('transaction', conn_i.connect(), 'DDS', coerce_float=False)
+    merged = transaction.merge(transaction_pos, how='left', on='transaction_id')
+    merged['pos_name'] = merged['pos_name'].astype(str)
+    merged = merged[merged['pos_name'] != 'nan']
+    transaction_pos = merged[['transaction_id', 'pos_name']]
+    truncate_table_intern('transaction_pos', conn_i.raw_connection())
+    transaction_pos.to_sql('transaction_pos', conn_i.connect(), 'DDS', 'append', index=False, method='multi')
+    print('links in transaction_stores checked')
 
 from sqlalchemy import create_engine
 
@@ -221,5 +237,5 @@ category_table_processing(conn_z, conn_i)
 product_table_processing(conn_z, conn_i)
 stock_table_processing(conn_z, conn_i)
 transaction_table_processing(conn_z, conn_i)
-
+transaction_pos_table_processing(conn_i)
 

@@ -24,6 +24,11 @@ CREATE TABLE IF NOT EXISTS "DDS".pos (
 	CONSTRAINT pos_pk PRIMARY KEY (pos)
 );
 
+CREATE TABLE IF NOT EXISTS "DDS".transaction_pos (
+	transaction_id varchar(255) NULL,
+	pos_name varchar(255) NULL
+);
+
 CREATE TABLE IF NOT EXISTS "DDS".product (
 	product_id int4 NOT NULL,
 	name_short varchar(255) NULL,
