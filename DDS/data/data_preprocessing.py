@@ -215,14 +215,14 @@ def transaction_table_processing(conn_z, conn_i):
 def transaction_pos_table_processing(conn_i):
     transaction_pos = pd.read_sql_table('transaction_pos', conn_i.connect(), 'DDS', coerce_float=False)
     transaction_pos.drop_duplicates()
-    transaction_pos['pos_name'] = transaction_pos['pos_name'].astype(str)
-    transaction_pos = transaction_pos[transaction_pos['pos_name'] != 'None']
+    transaction_pos['pos'] = transaction_pos['pos'].astype(str)
+    transaction_pos = transaction_pos[transaction_pos['pos'] != 'None']
     pos = pd.read_sql_table('pos', conn_i.connect(), 'DDS', coerce_float=False)
     transaction = pd.read_sql_table('transaction', conn_i.connect(), 'DDS', coerce_float=False)
     merged = transaction.merge(transaction_pos, how='left', on='transaction_id')
-    merged['pos_name'] = merged['pos_name'].astype(str)
-    merged = merged[merged['pos_name'] != 'nan']
-    transaction_pos = merged[['transaction_id', 'pos_name']]
+    merged['pos'] = merged['pos'].astype(str)
+    merged = merged[merged['pos'] != 'nan']
+    transaction_pos = merged[['transaction_id', 'pos']]
     truncate_table_intern('transaction_pos', conn_i.raw_connection())
     transaction_pos.to_sql('transaction_pos', conn_i.connect(), 'DDS', 'append', index=False, method='multi')
     print('links in transaction_stores checked')

@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS "DDS".pos (
 
 CREATE TABLE IF NOT EXISTS "DDS".transaction_pos (
 	transaction_id varchar(255) NULL,
-	pos_name varchar(255) NULL
+	pos varchar(255) NULL
 );
 
 CREATE TABLE IF NOT EXISTS "DDS".product (
