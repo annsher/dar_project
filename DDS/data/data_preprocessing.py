@@ -25,7 +25,7 @@ def create_table_intern(conn_i):
     truncate_table_intern('transaction_pos', conn_i.raw_connection())
     #загрузка таблицы магазинов, которую предоставил заказчик
     csv_to_db('pos', 'pos, pos_name', conn_i.raw_connection())
-    csv_to_db('transaction_pos', 'transaction_id, pos_name', conn_i.raw_connection())
+    csv_to_db('transaction_pos', 'transaction_id, pos', conn_i.raw_connection())
     conn_i.raw_connection().commit()
     cursor.close()
     print('Таблицы загружены')
