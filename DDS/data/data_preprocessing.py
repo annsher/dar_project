@@ -205,7 +205,6 @@ def transaction_table_processing(conn_z, conn_i):
     error = pd.DataFrame(records, columns=['data', 'error', 'table_name'])
     error.to_sql('error', conn_i.connect(), 'DDS', 'append', index = False, method='multi')
     print('error table updated: продукта не существует transaction')
-    transaction = transaction.drop_duplicates(subset=['transaction_id'])
     transaction = transaction.drop_duplicates(subset=['transaction_id', 'product_id'])
     truncate_table_intern('transaction', conn_i.raw_connection())
     transaction.to_sql('transaction', conn_i.connect(), 'DDS', 'append', index=False, method='multi')
@@ -220,12 +219,19 @@ def transaction_pos_table_processing(conn_i):
     pos = pd.read_sql_table('pos', conn_i.connect(), 'DDS', coerce_float=False)
     transaction = pd.read_sql_table('transaction', conn_i.connect(), 'DDS', coerce_float=False)
     merged = transaction.merge(transaction_pos, how='left', on='transaction_id')
+    merged = merged.merge(pos, how='left', on='pos')
     merged['pos'] = merged['pos'].astype(str)
     merged = merged[merged['pos'] != 'nan']
+    merged['pos_name'] = merged['pos_name'].astype(str)
+    merged = merged[merged['pos_name'] != 'nan']
     transaction_pos = merged[['transaction_id', 'pos']]
+    transaction = merged[list(transaction)]
     truncate_table_intern('transaction_pos', conn_i.raw_connection())
+    truncate_table_intern('transaction', conn_i.raw_connection())
+    transaction.to_sql('transaction', conn_i.connect(), 'DDS', 'append', index=False, method='multi')
     transaction_pos.to_sql('transaction_pos', conn_i.connect(), 'DDS', 'append', index=False, method='multi')
-    print('links in transaction_stores checked')
+    print('links in transaction_pos checked')
+    print('link transaction to transaction_pos checked')
 
 from sqlalchemy import create_engine
 
