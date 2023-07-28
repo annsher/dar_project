@@ -180,7 +180,7 @@ def transaction_table_processing(conn_z, conn_i):
         pd.to_numeric(transaction['product_id'], errors='coerce')) == 'nan')], 'transaction', 'неверный формат product_id', conn_i.connect())
     transaction = transaction[pd.to_numeric(transaction['product_id'], errors='coerce') >= 0]
     transaction['product_id'] = transaction['product_id'].astype('int')
-    transaction['recorded_on'] = pd.to_datetime(transaction['recorded_on'], format='mixed')
+    transaction['recorded_on'] = pd.to_datetime(transaction['recorded_on'])
     record_errors(transaction[pd.to_numeric(transaction['quantity'], errors='coerce') < 0], 'transaction', 'неверный формат quantity', conn_i.connect())
     transaction = transaction[pd.to_numeric(transaction['quantity'], errors='coerce') >= 0]
     transaction['quantity'] = transaction['quantity'].astype('int')
