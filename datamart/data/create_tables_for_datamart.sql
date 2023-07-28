@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS datamart.to_order (
 	category_name varchar(255) NULL,
 	available_quantity int4 NULL,
 	pos_name varchar(255) NULL,
-	"order" bool NULL,
+	"order" varchar NULL,
 	"limit" int4 NULL
 );
 

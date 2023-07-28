@@ -152,6 +152,7 @@ def fill_to_order(conn_i):
     #эту строку удалить
     merged = merged[merged['available_on'] == '2021-06-30']
     merged = merged[merged['order'] == True]
+    merged['order'] = 'Да'
     result = merged[['name_short', 'category_name', 'available_quantity', 'limit', 'pos_name', 'order']]
     result.to_sql('to_order', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     print('to_order uploaded')
