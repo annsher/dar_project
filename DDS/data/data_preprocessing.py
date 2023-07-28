@@ -63,6 +63,7 @@ def category_table_processing(conn_z, conn_i):
     category = category.drop_duplicates()
     record_errors(category[category.duplicated(subset=['category_id'])], 'category', 'дубликат id', conn_i.connect())
     category = category.drop_duplicates(subset=['category_id'])
+    category = category.drop_duplicates(subset=['category_name'])
     record_errors(category[(category['category_id'] == '') | (category['category_id'] == 'NULL')| (category['category_id'] == 'nan')], 'category', 'неверный формат id', conn_i.connect())
     category = category[(category['category_id'] != '') & (category['category_id'] != 'NULL') & (category['category_id'] != 'nan')]
     category['category_name'] = category['category_name'].replace(['', 'NULL'], ["Не определено", "Не определено"])
