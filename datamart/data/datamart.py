@@ -130,6 +130,7 @@ def fill_sold_item_month(conn_i):
 
 def fill_top_5(conn_i):
     pos = pd.read_sql_table('pos', conn_i.connect(), 'DDS', coerce_float=False)
+    brand = pd.read_sql_table('brand', conn_i.connect(), 'DDS', coerce_float=False)
     product = pd.read_sql_table('product', conn_i.connect(), 'DDS', coerce_float=False)
     category = pd.read_sql_table('category', conn_i.connect(), 'DDS', coerce_float=False)
     transaction_pos = pd.read_sql_table('transaction_pos', conn_i.connect(), 'DDS', coerce_float=False)
@@ -138,14 +139,15 @@ def fill_top_5(conn_i):
     merged = transaction.merge(merged, how='left', on='product_id')
     merged = merged.merge(transaction_pos, how='left', on='transaction_id')
     merged = merged.merge(pos, how='left', on='pos')
+    merged = merged.merge(brand, how='left', on='brand_id')
     merged.insert(loc=len(merged.columns), column='month', value=merged['recorded_on'].dt.month)
     merged['month'] = merged['month'].astype(str)
     merged['month'] = merged['month'].replace(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
                                               ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август',
                                                'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'])
     merged.insert(loc=len(merged.columns), column='year', value=merged['recorded_on'].dt.year)
-    merged = merged.groupby(['name_short', 'category_name', 'month', 'year', 'pos_name'], as_index=False)['quantity'].agg(['sum']).sort_values(by=['sum'], ascending=False)
-    merged.columns = ['name_short', 'category_name', 'month', 'year', 'pos_name', 'qnt_sum']
+    merged = merged.groupby(['name_short', 'category_name', 'month', 'year', 'pos_name','brand'], as_index=False)['quantity'].agg(['sum']).sort_values(by=['sum'], ascending=False)
+    merged.columns = ['name_short', 'category_name', 'month', 'year', 'pos_name', 'brand','qnt_sum']
     merged.to_sql('top_5', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     print('top_5 uploaded')
 
@@ -171,7 +173,7 @@ def fill_to_order(conn_i):
     print('to_order uploaded')
 
 def fill_updated_on(conn_i):
-    upd = pd.DataFrame([datetime.datetime.now()], columns =['date'])
+    upd = pd.DataFrame([datetime.datetime.now(), '2021-06-30'], columns =['date'])
     upd.to_sql('updated_on', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     print('updated_on uploaded')
 

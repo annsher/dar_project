@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS datamart.top_5 (
 	"year" int4 NULL,
 	qnt_sum int4 NULL,
 	pos_name varchar(255) NULL,
+	brand varchar(255) NULL,
 	CONSTRAINT top_5_fk FOREIGN KEY (pos_name) REFERENCES datamart.pos(pos_name),
 	CONSTRAINT top_5_fk_1 FOREIGN KEY (category_name) REFERENCES datamart.category(category_name),
 	CONSTRAINT top_5_fk_2 FOREIGN KEY ("month") REFERENCES datamart.months("month"),
