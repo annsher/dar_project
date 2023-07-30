@@ -23,7 +23,8 @@ def create_table_intern(conn_i):
     cursor.execute(create)
     truncate_table_intern('pos', conn_i.raw_connection())
     truncate_table_intern('transaction_pos', conn_i.raw_connection())
-    #загрузка таблицы магазинов, которую предоставил заказчик
+    truncate_table_intern('error', conn_i.raw_connection())
+    #загрузка таблиц, которую предоставил заказчик
     csv_to_db('pos', 'pos, pos_name', conn_i.raw_connection())
     csv_to_db('transaction_pos', 'transaction_id, pos', conn_i.raw_connection())
     conn_i.raw_connection().commit()
@@ -64,6 +65,8 @@ def category_table_processing(conn_z, conn_i):
     record_errors(category[category.duplicated(subset=['category_id'])], 'category', 'дубликат id', conn_i.connect())
     category = category.drop_duplicates(subset=['category_id'])
     category = category.drop_duplicates(subset=['category_name'])
+    for name in ['НЕ ИСПОЛЬЗУМЕ', 'ПАРТНЕРЫ', 'Нераспределенные категории', 'Нераспределенные  товары', 'Пусто', 'Трубы', 'НЕ ИСПОЛЬЗУЕМ', 'Нераспределенные товары']:
+        category = category[category['category_name'] != name]
     record_errors(category[(category['category_id'] == '') | (category['category_id'] == 'NULL')| (category['category_id'] == 'nan')], 'category', 'неверный формат id', conn_i.connect())
     category = category[(category['category_id'] != '') & (category['category_id'] != 'NULL') & (category['category_id'] != 'nan')]
     category['category_name'] = category['category_name'].replace(['', 'NULL'], ["Не определено", "Не определено"])
@@ -82,8 +85,8 @@ def product_table_processing(conn_z, conn_i):
         records.append([str(error['product_id'].iloc[i]) + ' ' + str(error['name_short'].iloc[i]) + ' ' +
                         str(error['category_id'].iloc[i]) + ' ' + str(error['pricing_line_id'].iloc[i]) + ' ' +
                         str(error['brand_id'].iloc[i]), 'категории не существует', 'product'])
-    for j in set(error['product_id']):
-        product = product[product['product_id'] != j]
+    merged = merged[merged['category_name'] != 'nan']
+    product = merged[list(product)]
     error = pd.DataFrame(records, columns=['data', 'error', 'table_name'])
     error.to_sql('error', conn_i.connect(), 'DDS', 'append', index = False, method='multi')
     print('error table updated: категории не существует')
@@ -147,8 +150,8 @@ def stock_table_processing(conn_z, conn_i):
         records.append([str(error['available_on'].iloc[i]) + ' ' + str(error['product_id'].iloc[i]) + ' ' +
                         str(error['pos'].iloc[i]) + ' ' + str(error['available_quantity'].iloc[i]) + ' ' +
                         str(error['cost_per_item'].iloc[i]), 'продукта не существует', 'stock'])
-    for j in set(error['product_id']):
-        stock = stock[stock['product_id'] != j]
+    merged = merged[merged['name_short'] != 'nan']
+    stock = merged[list(stock)]
     error = pd.DataFrame(records, columns=['data', 'error', 'table_name'])
     error.to_sql('error', conn_i.connect(), 'DDS', 'append', index = False, method='multi')
     print('error table updated: продукта не существует stock')
@@ -161,8 +164,8 @@ def stock_table_processing(conn_z, conn_i):
         records.append([str(error['available_on'].iloc[i]) + ' ' + str(error['product_id'].iloc[i]) + ' ' +
                         str(error['pos'].iloc[i]) + ' ' + str(error['available_quantity'].iloc[i]) + ' ' +
                         str(error['cost_per_item'].iloc[i]), 'магазина не существует', 'stock'])
-    for j in set(error['pos']):
-        stock = stock[stock['pos'] != j]
+    merged = merged[merged['pos_name'] != 'nan']
+    stock = merged[list(stock)]
     error = pd.DataFrame(records, columns=['data', 'error', 'table_name'])
     error.to_sql('error', conn_i.connect(), 'DDS', 'append', index = False, method='multi')
     print('error table updated: магазина не существует stock')
@@ -201,8 +204,8 @@ def transaction_table_processing(conn_z, conn_i):
         records.append([str(error['transaction_id'].iloc[i]) + ' ' + str(error['product_id'].iloc[i]) + ' ' +
                         str(error['recorded_on'].iloc[i]) + ' ' + str(error['quantity'].iloc[i]) + ' ' +
                         str(error['price'].iloc[i]) + ' ' + str(error['price_full'].iloc[i]) + ' ' + str(error['order_type_id'].iloc[i]), 'продукта не существует', 'transaction'])
-    for j in set(error['product_id']):
-        transaction = transaction[transaction['product_id'] != j]
+    merged = merged[merged['name_short'] != 'nan']
+    transaction = merged[list(transaction)]
     error = pd.DataFrame(records, columns=['data', 'error', 'table_name'])
     error.to_sql('error', conn_i.connect(), 'DDS', 'append', index = False, method='multi')
     print('error table updated: продукта не существует transaction')
