@@ -8,7 +8,7 @@ hide_sensitive_var_conn_fields = True
 with DAG(
     "dag_create_datamart",
     start_date = datetime.datetime(2023, 7, 1),
-    schedule = None, catchup = False
+    schedule = '0 5 * * *', catchup = False
 ) as dag:
 
     dag_create_datamart = BashOperator(
