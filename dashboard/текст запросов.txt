@@ -1,0 +1,71 @@
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_avg_purchase = Источник{[Schema="datamart",Item="avg_purchase"]}[Data]
+in
+    datamart_avg_purchase
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_avg_purchase_month = Источник{[Schema="datamart",Item="avg_purchase_month"]}[Data]
+in
+    datamart_avg_purchase_month
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_revenue_month = Источник{[Schema="datamart",Item="revenue_month"]}[Data]
+in
+    datamart_revenue_month
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_sold_item = Источник{[Schema="datamart",Item="sold_item"]}[Data]
+in
+    datamart_sold_item
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_sold_item_month = Источник{[Schema="datamart",Item="sold_item_month"]}[Data]
+in
+    datamart_sold_item_month
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_to_order = Источник{[Schema="datamart",Item="to_order"]}[Data]
+in
+    datamart_to_order
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_top_5 = Источник{[Schema="datamart",Item="top_5"]}[Data]
+in
+    datamart_top_5
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_updated_on = Источник{[Schema="datamart",Item="updated_on"]}[Data]
+in
+    datamart_updated_on
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_category = Источник{[Schema="datamart",Item="category"]}[Data]
+in
+    datamart_category
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_pos = Источник{[Schema="datamart",Item="pos"]}[Data]
+in
+    datamart_pos
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_years = Источник{[Schema="datamart",Item="years"]}[Data]
+in
+    datamart_years
+
+let
+    Источник = PostgreSQL.Database("10.1.108.29", "internship_4_db"),
+    datamart_months = Источник{[Schema="datamart",Item="months"]}[Data]
+in
+    datamart_months
