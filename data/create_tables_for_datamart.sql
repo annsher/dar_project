@@ -27,9 +27,7 @@ CREATE TABLE IF NOT EXISTS datamart.avg_purchase (
 	pos_name varchar(255) NULL,
 	revenue_daily numeric NULL,
 	avg_amount numeric NULL,
-	category_name varchar(255) NULL,
-	CONSTRAINT avg_purchase_fk FOREIGN KEY (pos_name) REFERENCES datamart.pos(pos_name),
-	CONSTRAINT avg_purchase_fk_1 FOREIGN KEY (category_name) REFERENCES datamart.category(category_name)
+	CONSTRAINT avg_purchase_fk FOREIGN KEY (pos_name) REFERENCES datamart.pos(pos_name)
 );
 
 CREATE TABLE IF NOT EXISTS datamart.avg_purchase_month (

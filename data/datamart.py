@@ -10,7 +10,7 @@ def truncate_table_intern(table, conn_i):
 
 def create_table_intern(conn_i):
     cursor = conn_i.raw_connection().cursor()
-    f = open('/opt/airflow/data/create_tables_for_datamart.sql', 'r')
+    f = open('create_tables_for_datamart.sql', 'r')
     create = ''.join(f.readlines())
     cursor.execute(create)
     for tables in ['avg_purchase', 'avg_purchase_month', 'revenue_month', 'sold_item', 'sold_item_month', 'to_order', 'top_5', 'pos', 'category', 'updated_on', 'months', 'years']:
@@ -33,28 +33,22 @@ def create_table_intern(conn_i):
     print('Таблицы загружены')
 
 def fill_avg_purchase(conn_i):
-    category = pd.read_sql_table('category', conn_i.connect(), 'DDS', coerce_float=False)
-    product = pd.read_sql_table('product', conn_i.connect(), 'DDS', coerce_float=False)
     pos = pd.read_sql_table('pos', conn_i.connect(), 'DDS', coerce_float=False)
     transaction_pos = pd.read_sql_table('transaction_pos', conn_i.connect(), 'DDS', coerce_float=False)
     transaction = pd.read_sql_table('transaction', conn_i.connect(), 'DDS', coerce_float=False)
     merged = transaction_pos.merge(pos, how='left', on='pos')
     merged = transaction.merge(merged, how='left', on='transaction_id')
-    merged = merged.merge(product, how='left', on='product_id')
-    merged = merged.merge(category, how='left', on='category_id')
     merged.insert(loc=len(merged.columns), column='total', value=merged['quantity']*merged['price'])
-    merged = merged.groupby(['transaction_id','recorded_on', 'pos_name', 'category_name'], as_index=False)['total'].agg(['sum', 'mean'])
-    merged = merged.reset_index()
-    merged.columns = ['transaction_id','recorded_on', 'pos_name','category_name', 'revenue_daily', 'avg_amount']
-    merged = merged[['recorded_on', 'pos_name','category_name', 'revenue_daily', 'avg_amount']]
+    merged = merged.groupby(['transaction_id','recorded_on', 'pos_name'], as_index=False)['total'].agg(['sum', 'mean'])
+    #merged = merged.reset_index()
+    merged.columns = ['transaction_id','recorded_on', 'pos_name','revenue_daily', 'avg_amount']
+    merged = merged[['recorded_on', 'pos_name', 'revenue_daily', 'avg_amount']]
     merged.to_sql('avg_purchase', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     conn_i.connect().close()
     print('avg_purchase uploaded')
 
 
 def fill_avg_purchase_month(conn_i):
-    category = pd.read_sql_table('category', conn_i.connect(), 'DDS', coerce_float=False)
-    product = pd.read_sql_table('product', conn_i.connect(), 'DDS', coerce_float=False)
     pos = pd.read_sql_table('pos', conn_i.connect(), 'DDS', coerce_float=False)
     transaction_pos = pd.read_sql_table('transaction_pos', conn_i.connect(), 'DDS', coerce_float=False)
     transaction = pd.read_sql_table('transaction', conn_i.connect(), 'DDS', coerce_float=False)
@@ -66,7 +60,7 @@ def fill_avg_purchase_month(conn_i):
     merged['month'] = merged['month'].astype(str)
     merged['month'] = merged['month'].replace(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'], ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'])
     merged = merged.groupby(['transaction_id','month', 'year', 'pos_name'], as_index=False)['total'].agg(['mean'])
-    merged = merged.reset_index()
+    #merged = merged.reset_index()
     merged.columns = ['transaction_id','month', 'year', 'pos_name', 'avg_amount_month']
     merged = merged[['month', 'year', 'pos_name', 'avg_amount_month']]
     merged.to_sql('avg_purchase_month', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
@@ -96,7 +90,7 @@ def fill_revenue_month(conn_i):
                                                'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'])
     merged.insert(loc=len(merged.columns), column='year', value=merged['recorded_on'].dt.year)
     merged = merged.groupby(['month', 'year', 'category_name', 'pos_name'], as_index=False)['total'].agg(['sum'])
-    merged = merged.reset_index()
+    #merged = merged.reset_index()
     merged.columns = ['month', 'year', 'category_name', 'pos_name', 'revenue']
     merged.to_sql('revenue_month', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     conn_i.connect().close()
@@ -118,7 +112,7 @@ def fill_sold_item(conn_i):
     merged = merged.merge(transaction_pos, how='left', on='transaction_id')
     merged = merged.merge(pos, how='left', on='pos')
     merged = merged.groupby(['recorded_on', 'category_name', 'pos_name'], as_index=False)['quantity'].agg(['sum'])
-    merged = merged.reset_index()
+    #merged = merged.reset_index()
     merged.columns = ['recorded_on', 'category_name', 'pos_name', 'qnt']
     merged.to_sql('sold_item', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     conn_i.connect().close()
@@ -146,7 +140,7 @@ def fill_sold_item_month(conn_i):
                                               ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август',
                                                'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'])
     merged = merged.groupby(['month', 'year', 'category_name', 'pos_name'], as_index=False)['quantity'].agg(['sum'])
-    merged = merged.reset_index()
+    #merged = merged.reset_index()
     merged.columns = ['month', 'year', 'category_name', 'pos_name', 'qnt_month']
     merged.to_sql('sold_item_month', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     conn_i.connect().close()
@@ -177,7 +171,7 @@ def fill_top_5(conn_i):
                                                'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'])
     merged.insert(loc=len(merged.columns), column='year', value=merged['recorded_on'].dt.year)
     merged = merged.groupby(['name_short', 'category_name', 'month', 'year', 'pos_name','brand'], as_index=False)['quantity'].agg(['sum']).sort_values(by=['sum'], ascending=False)
-    merged = merged.reset_index()
+    #merged = merged.reset_index()
     merged.columns = ['name_short', 'category_name', 'month', 'year', 'pos_name', 'brand','qnt_sum']
     merged.to_sql('top_5', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     conn_i.connect().close()
@@ -202,7 +196,7 @@ def fill_to_order(conn_i):
     merged = merged[merged['available_on'] == '2021-06-30']
     merged = merged[merged['order'] == True]
     merged['order'] = 'Да'
-    merged = merged.reset_index()
+    #merged = merged.reset_index()
     result = merged[['name_short','brand','category_name', 'available_quantity', 'limit', 'pos_name', 'order']]
     result.to_sql('to_order', conn_i.connect(), 'datamart', 'append', index=False, method='multi')
     conn_i.connect().close()
